@@ -13,6 +13,7 @@ from keras.layers import Input
 from keras.models import Model
 from keras.backend.tensorflow_backend import set_session
 from keras_frcnn import roi_helpers
+from keras_frcnn.simple_parser import get_data
 
 sys.setrecursionlimit(40000)
 
@@ -31,6 +32,8 @@ parser.add_option("--config_filename", dest="config_filename", help=
 				"Location to read the metadata related to the training (generated when training).",
 				default="config.pickle")
 parser.add_option("--network", dest="network", help="Base network to use. Supports vgg or resnet50.", default='resnet50')
+parser.add_option("--expected_file", dest = "expected_file", help = "Filename of expected annotations", default= "for_tests.csv")
+
 
 (options, args) = parser.parse_args()
 
@@ -105,7 +108,7 @@ if 'bg' not in class_mapping:
 	class_mapping['bg'] = len(class_mapping)
 
 class_mapping = {v: k for k, v in class_mapping.items()}
-print(class_mapping)
+# print(class_mapping)
 class_to_color = {class_mapping[v]: np.random.randint(0, 255, 3) for v in class_mapping}
 C.num_rois = int(options.num_rois)
 
@@ -140,7 +143,7 @@ model_classifier_only = Model([feature_map_input, roi_input], classifier)
 
 model_classifier = Model([feature_map_input, roi_input], classifier)
 
-print(f'Loading weights from {C.model_path}')
+# print(f'Loading weights from {C.model_path}')
 model_rpn.load_weights(C.model_path, by_name=True)
 model_classifier.load_weights(C.model_path, by_name=True)
 
@@ -154,6 +157,8 @@ classes = {}
 bbox_threshold = 0.8
 
 visualise = True
+
+act_images, _,_ = get_data(options.expected_file)
 
 for idx, img_name in enumerate(sorted(os.listdir(img_path))):
 	if not img_name.lower().endswith(('.bmp', '.jpeg', '.jpg', '.png', '.tif', '.tiff')):
@@ -190,7 +195,7 @@ for idx, img_name in enumerate(sorted(os.listdir(img_path))):
 
 		if jk == R.shape[0]//C.num_rois:
 			#pad R
-			curr_shape = ROIs.shape9
+			curr_shape = ROIs.shape
 			target_shape = (curr_shape[0],C.num_rois,curr_shape[2])
 			ROIs_padded = np.zeros(target_shape).astype(ROIs.dtype)
 			ROIs_padded[:, :curr_shape[1], :] = ROIs
@@ -247,6 +252,7 @@ for idx, img_name in enumerate(sorted(os.listdir(img_path))):
 			cv2.rectangle(img, (textOrg[0] - 5, textOrg[1]+baseLine - 5), (textOrg[0]+retval[0] + 5, textOrg[1]-retval[1] - 5), (0, 0, 0), 2)
 			cv2.rectangle(img, (textOrg[0] - 5,textOrg[1]+baseLine - 5), (textOrg[0]+retval[0] + 5, textOrg[1]-retval[1] - 5), (255, 255, 255), -1)
 			cv2.putText(img, textLabel, textOrg, cv2.FONT_HERSHEY_DUPLEX, 1, (0, 0, 0), 1)
+	
 
 	print(f'Elapsed time = {time.time() - st}')
 	print(all_dets)
