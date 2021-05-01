@@ -17,6 +17,11 @@ from keras_frcnn import losses as losses
 import keras_frcnn.roi_helpers as roi_helpers
 from keras.utils import generic_utils
 
+
+import tensorflow as tf
+import datetime
+import traceback
+
 sys.setrecursionlimit(40000)
 
 parser = OptionParser()
@@ -184,6 +189,19 @@ print('Starting training')
 
 vis = True
 
+current_time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+
+rpn_var_loss = tf.Variable(0, dtype=tf.float32)
+class_var_acc = tf.Variable(0, dtype=tf.float32)
+class_var_loss = tf.Variable(0, dtype=tf.float32)
+rpn_summ_loss = tf.summary.scalar('RPN Loss', rpn_var_loss) # summary to write to TensorBoard
+class_summ_acc = tf.summary.scalar('Class Accuracy', class_var_acc) # summary to write to TensorBoard
+class_summ_loss = tf.summary.scalar('Class Loss', class_var_loss) # summary to write to TensorBoard
+
+writer_acc = tf.summary.FileWriter('logs/graphs/' + current_time)
+
+sess = tf.Session()
+
 for epoch_num in range(num_epochs):
 
 	progbar = generic_utils.Progbar(epoch_length)
@@ -262,9 +280,27 @@ for epoch_num in range(num_epochs):
 			progbar.update(iter_num+1, [('rpn_cls', losses[iter_num, 0]), ('rpn_regr', losses[iter_num, 1]),
 									  ('detector_cls', losses[iter_num, 2]), ('detector_regr', losses[iter_num, 3])])
 
+
+
 			iter_num += 1
+
+			step = (epoch_length * (epoch_num)) + iter_num
 			
+			sess.run(rpn_var_loss.assign(loss_rpn[2]))
+
+			sess.run(class_var_acc.assign(loss_class[3])) 
+			sess.run(class_var_loss.assign(loss_class[2])) 
+
+			writer_acc.add_summary(sess.run(rpn_summ_loss), step)
+
+			writer_acc.add_summary(sess.run(class_summ_acc), step)
+			writer_acc.add_summary(sess.run(class_summ_loss), step)
+
+
+
+			writer_acc.flush()
 			if iter_num == epoch_length:
+
 				loss_rpn_cls = np.mean(losses[:, 0])
 				loss_rpn_regr = np.mean(losses[:, 1])
 				loss_class_cls = np.mean(losses[:, 2])
@@ -297,6 +333,10 @@ for epoch_num in range(num_epochs):
 
 		except Exception as e:
 			print(f'Exception: {e}')
+			traceback.print_exc()
 			continue
+
+
+
 
 print('Training complete, exiting.')
