@@ -102,6 +102,14 @@ def get_real_coordinates(ratio, x1, y1, x2, y2):
 
 	return (real_x1, real_y1, real_x2 ,real_y2)
 
+def find_img_index(imgs : list, img_path:str) -> int:
+	i = 0
+	for img in imgs:
+		if img["filepath"] == img_path:
+			return i
+		i += 1
+	return -1
+
 class_mapping = C.class_mapping
 
 if 'bg' not in class_mapping:
@@ -253,9 +261,13 @@ for idx, img_name in enumerate(sorted(os.listdir(img_path))):
 			cv2.rectangle(img, (textOrg[0] - 5,textOrg[1]+baseLine - 5), (textOrg[0]+retval[0] + 5, textOrg[1]-retval[1] - 5), (255, 255, 255), -1)
 			cv2.putText(img, textLabel, textOrg, cv2.FONT_HERSHEY_DUPLEX, 1, (0, 0, 0), 1)
 	
+	image_index = find_img_index(act_images, filepath)
+	if image_index != -1:
+		for bbox in act_images[image_index]["bboxes"]:
+			cv2.rectangle(img, (bbox["x1"], bbox["x2"]), (bbox["x1"], bbox["x2"]), (0,0,255),2)
 
 	print(f'Elapsed time = {time.time() - st}')
-	print(all_dets)
+	# print(all_dets)
 
 	print("Num Birds = " + str(len(all_dets)))
 
