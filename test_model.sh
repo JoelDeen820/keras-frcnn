@@ -1,1 +1,1 @@
-python train_frcnn.py -p ".\data\images"
+python test_frcnn.py -p ".\data\images"
