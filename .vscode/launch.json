@@ -14,7 +14,9 @@
                 "-p",
                 "parsed.csv",
                 "-o",
-                "simple"
+                "simple",
+                "--num_epochs",
+                "20"
             ]
         }
     ]

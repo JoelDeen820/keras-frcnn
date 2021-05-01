@@ -1,1 +1,1 @@
-python train_frcnn.py -p parsed.csv -o simple
+python train_frcnn.py -p parsed.csv -o simple --num_epochs 20

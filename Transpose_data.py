@@ -35,6 +35,6 @@ def transform_csv(file_path: str) -> list:
     return output_lines
     
 if __name__ == "__main__" :
-    output_lines = transform_csv("Chicken_Images_Set3_Set2_csv.csv")
+    output_lines = transform_csv("to_process.csv")
     with open("parsed.csv", "w") as f_w:
         f_w.writelines(output_lines)
