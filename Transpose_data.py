@@ -29,6 +29,7 @@ def transform_csv(file_path: str) -> list:
             x2 = x1 + int(width)
             y1 = int(re.findall("\d+",y_str)[0])
             y2 = y1 + int(height)
+            fileName = r'.\data\images\{}'.format(fileName)
             transformed_line = ",".join([fileName, str(x1), str(x2), str(y1), str(y2), "Chicken"])
             output_lines.append(transformed_line + "\n")
     return output_lines

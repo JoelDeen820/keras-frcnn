@@ -91,3 +91,6 @@ ENV/
 # hdf5
 *.h5
 *.hdf5
+
+#data folder
+data
