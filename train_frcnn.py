@@ -36,6 +36,7 @@ parser.add_option("--config_filename", dest="config_filename", help=
 				default="config.pickle")
 parser.add_option("--output_weight_path", dest="output_weight_path", help="Output path for weights.", default='./model_frcnn.hdf5')
 parser.add_option("--input_weight_path", dest="input_weight_path", help="Input path for weights. If not specified, will try to load default weights provided by keras.")
+parser.add_option("--test_size", dest = "test_size", help = "gives the size of the images in percent", default = 0.25)
 
 (options, args) = parser.parse_args()
 
@@ -81,8 +82,22 @@ else:
 	# set the path to weights based on backend and model
 	C.base_net_weights = nn.get_weight_path()
 
-train_imgs, classes_count, class_mapping = get_data(options.train_path)
-val_imgs, _, _ = get_data(options.train_path)
+train_image_ratio = options.test_size
+
+# train_imgs, classes_count, class_mapping = get_data(options.train_path)
+all_images, classes_count, class_mapping = get_data(options.train_path)
+# val_imgs, _, _ = get_data(options.train_path)
+
+train_imgs = []
+val_imgs = []
+print(int(len(all_images)*0.25))
+test_images_index = random.sample(range(0,len(all_images)- 1), k = int(len(all_images)*train_image_ratio))
+for i in range(0,len(all_images)):
+	if i in test_images_index:
+		val_imgs.append(all_images[i])
+	else:
+		train_imgs.append(all_images[i])
+
 
 if 'bg' not in classes_count:
 	classes_count['bg'] = 0
@@ -153,7 +168,7 @@ model_rpn.compile(optimizer=optimizer, loss=[losses.rpn_loss_cls(num_anchors), l
 model_classifier.compile(optimizer=optimizer_classifier, loss=[losses.class_loss_cls, losses.class_loss_regr(len(classes_count)-1)], metrics={f'dense_class_{len(classes_count)}': 'accuracy'})
 model_all.compile(optimizer='sgd', loss='mae')
 
-epoch_length = 20 #1000
+epoch_length = 30 #1000
 num_epochs = int(options.num_epochs)
 iter_num = 0
 

@@ -1,0 +1,1 @@
+python train_frcnn.py -p ".\data\images"
