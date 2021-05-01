@@ -5,6 +5,17 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Python: Test file",
+            "type": "python",
+            "request": "launch",
+            "program": "test_frcnn.py",
+            "console": "integratedTerminal",
+            "args" : [
+                "-p",
+                ".\\data\\images"
+            ]
+        },
+        {
             "name": "Python: Training file",
             "type": "python",
             "request": "launch",
