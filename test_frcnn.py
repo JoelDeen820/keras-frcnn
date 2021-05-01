@@ -190,7 +190,7 @@ for idx, img_name in enumerate(sorted(os.listdir(img_path))):
 
 		if jk == R.shape[0]//C.num_rois:
 			#pad R
-			curr_shape = ROIs.shape
+			curr_shape = ROIs.shape9
 			target_shape = (curr_shape[0],C.num_rois,curr_shape[2])
 			ROIs_padded = np.zeros(target_shape).astype(ROIs.dtype)
 			ROIs_padded[:, :curr_shape[1], :] = ROIs
@@ -199,7 +199,7 @@ for idx, img_name in enumerate(sorted(os.listdir(img_path))):
 
 		[P_cls, P_regr] = model_classifier_only.predict([F, ROIs])
 
-		for ii in range(P_cls.shape[1]):
+		for ii in range(P_cls.shape[1]):	
 
 			if np.max(P_cls[0, ii, :]) < bbox_threshold or np.argmax(P_cls[0, ii, :]) == (P_cls.shape[2] - 1):
 				continue
@@ -250,6 +250,8 @@ for idx, img_name in enumerate(sorted(os.listdir(img_path))):
 
 	print(f'Elapsed time = {time.time() - st}')
 	print(all_dets)
+
+	print("Num Birds = " + str(len(all_dets)))
 
 	
 	cv2.imwrite('.\image_results\\{}.png'.format(os.path.splitext(str(img_name))[0]),img)
