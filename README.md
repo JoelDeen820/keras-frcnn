@@ -2,7 +2,21 @@
 Keras implementation of Faster R-CNN: Towards Real-Time Object Detection with Region Proposal Networks.
 cloned from https://github.com/yhenon/keras-frcnn/
 
+## Requirements
+This script requires a CUDA capable device with compatibility with CUDA toolkit 10.0.
 
+The environment used is as seen in the environment file and can be installed with
+``` bash
+conda env create -f environment.yml
+```
+
+You also need to make the following folders
+
+For seeing the output of the results, the following folders need to be allocated.
+``` txt
+plot
+image_results
+```
 
 USAGE:
 - Both theano and tensorflow backends are supported. However compile times are very high in theano, and tensorflow is highly recommended.

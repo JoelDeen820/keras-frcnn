@@ -95,3 +95,5 @@ ENV/
 #data folder
 data
 image_results
+plots
+logs

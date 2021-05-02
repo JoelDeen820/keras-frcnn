@@ -270,7 +270,7 @@ for idx, img_name in enumerate(sorted(os.listdir(img_path))):
 
 	#use for windows 
 	#generate_heatmap(x_data=x_bird_pts, y_data= y_bird_pts, file_path="\\plots\\heatmap_" + img_name + ".png")
-	generate_heatmap(x_data=x_bird_pts, y_data= y_bird_pts, file_path="./plots/heatmap_" + img_name)
+	generate_heatmap(x_data=x_bird_pts, y_data= y_bird_pts, file_path=".\\plots\\heatmap_" + img_name)
 	
 	print(f'Elapsed time = {time.time() - st}')
 	# print(all_dets)
