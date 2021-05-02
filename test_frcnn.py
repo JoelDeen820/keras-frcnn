@@ -14,6 +14,7 @@ from keras.models import Model
 from keras.backend.tensorflow_backend import set_session
 from keras_frcnn import roi_helpers
 from keras_frcnn.simple_parser import get_data
+from heatmap import generate_heatmap
 
 sys.setrecursionlimit(40000)
 
@@ -62,7 +63,7 @@ def format_img_size(img, C):
 	""" formats the image size based on config """
 	img_min_side = float(C.im_size)
 	(height,width,_) = img.shape
-		
+
 	if width <= height:
 		ratio = img_min_side/width
 		new_height = int(ratio * height)
@@ -72,7 +73,7 @@ def format_img_size(img, C):
 		new_width = int(ratio * width)
 		new_height = int(img_min_side)
 	img = cv2.resize(img, (new_width, new_height), interpolation=cv2.INTER_CUBIC)
-	return img, ratio	
+	return img, ratio
 
 def format_img_channels(img, C):
 	""" formats the image channels based on config """
@@ -162,6 +163,8 @@ all_imgs = []
 
 classes = {}
 
+
+
 bbox_threshold = 0.8
 
 visualise = True
@@ -184,7 +187,7 @@ for idx, img_name in enumerate(sorted(os.listdir(img_path))):
 
 	# get the feature maps and output from the RPN
 	[Y1, Y2, F] = model_rpn.predict(X)
-	
+
 
 	R = roi_helpers.rpn_to_roi(Y1, Y2, C, K.common.image_dim_ordering(), overlap_thresh=0.7)
 
@@ -212,7 +215,7 @@ for idx, img_name in enumerate(sorted(os.listdir(img_path))):
 
 		[P_cls, P_regr] = model_classifier_only.predict([F, ROIs])
 
-		for ii in range(P_cls.shape[1]):	
+		for ii in range(P_cls.shape[1]):
 
 			if np.max(P_cls[0, ii, :]) < bbox_threshold or np.argmax(P_cls[0, ii, :]) == (P_cls.shape[2] - 1):
 				continue
@@ -240,13 +243,17 @@ for idx, img_name in enumerate(sorted(os.listdir(img_path))):
 
 	all_dets = []
 
+	x_bird_pts = []
+	y_bird_pts = []
+
 	for key in bboxes:
 		bbox = np.array(bboxes[key])
 
 		new_boxes, new_probs = roi_helpers.non_max_suppression_fast(bbox, np.array(probs[key]), overlap_thresh=0.5)
 		for jk in range(new_boxes.shape[0]):
 			(x1, y1, x2, y2) = new_boxes[jk,:]
-
+			x_bird_pts.append((x1 + x2)//2)
+			y_bird_pts.append((y1 + y2)//2)
 			(real_x1, real_y1, real_x2, real_y2) = get_real_coordinates(ratio, x1, y1, x2, y2)
 
 			cv2.rectangle(img,(real_x1, real_y1), (real_x2, real_y2), (int(class_to_color[key][0]), int(class_to_color[key][1]), int(class_to_color[key][2])),2)
@@ -260,7 +267,8 @@ for idx, img_name in enumerate(sorted(os.listdir(img_path))):
 			cv2.rectangle(img, (textOrg[0] - 5, textOrg[1]+baseLine - 5), (textOrg[0]+retval[0] + 5, textOrg[1]-retval[1] - 5), (0, 0, 0), 2)
 			cv2.rectangle(img, (textOrg[0] - 5,textOrg[1]+baseLine - 5), (textOrg[0]+retval[0] + 5, textOrg[1]-retval[1] - 5), (255, 255, 255), -1)
 			cv2.putText(img, textLabel, textOrg, cv2.FONT_HERSHEY_DUPLEX, 1, (0, 0, 0), 1)
-	
+
+	generate_heatmap(x_data=x_bird_pts, y_data= y_bird_pts, file_path="\\plots\\heatmap_" + img_name + ".png")
 	image_index = find_img_index(act_images, filepath)
 	if image_index != -1:
 		for bbox in act_images[image_index]["bboxes"]:
@@ -271,6 +279,5 @@ for idx, img_name in enumerate(sorted(os.listdir(img_path))):
 
 	print("Num Birds = " + str(len(all_dets)))
 
-	
-	cv2.imwrite('.\image_results\\{}.png'.format(os.path.splitext(str(img_name))[0]),img)
 
+	cv2.imwrite('.\image_results\\{}.png'.format(os.path.splitext(str(img_name))[0]),img)
